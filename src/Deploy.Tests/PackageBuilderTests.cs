@@ -1,97 +1,97 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace Deploy
 {
-    [TestClass]
+    [TestFixture]
     public class PackageBuilderTests
     {
         private string _filename;
 
-        [TestInitialize]
+        [SetUp]
         public void Setup()
         {
             _filename = Path.GetTempFileName();
         }
 
-        [TestCleanup]
+        [TearDown]
         public void Cleanup()
         {
             File.Delete(_filename);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void NoProductNameThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .UpgradeCode(Guid.NewGuid())
-                .Version(new Version(1, 2, 3))
-                .Build(_filename);
+                .Version(new Version(1, 2, 3));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void InvalidProductNameThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("\\Name*?")
                 .UpgradeCode(Guid.NewGuid())
-                .Version(new Version(1, 2, 3))
-                .Build(_filename);
+                .Version(new Version(1, 2, 3));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void NullProductNameThrows()
         {
-            new PackageBuilder()
-                .ProductName(null);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.ProductName(null), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void EmptyProductNameThrows()
         {
-            new PackageBuilder()
-                .ProductName(string.Empty);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.ProductName(string.Empty), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void NullProductIconThrows()
         {
-            new PackageBuilder()
-                .ProductIcon(null);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.ProductIcon(null), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void EmptyProductIconThrows()
         {
-            new PackageBuilder()
-                .ProductIcon(string.Empty);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.ProductIcon(string.Empty), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void NoVersionThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
-                .UpgradeCode(Guid.NewGuid())
-                .Build(_filename);
+                .UpgradeCode(Guid.NewGuid());
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
+        [Test]
         public void NoAuthorSucceeds()
         {
             new PackageBuilder()
@@ -102,7 +102,7 @@ namespace Deploy
                 .Build(_filename);
         }
 
-        [TestMethod]
+        [Test]
         public void NoPlatformUsesDefault()
         {
             new PackageBuilder()
@@ -113,89 +113,88 @@ namespace Deploy
                 .Build(_filename);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void NoUpgradeCodeThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
-                .Version(new Version(1, 2, 3))
-                .Build(_filename);
+                .Version(new Version(1, 2, 3));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void EmptyUpgradeCodeThrows()
         {
-            new PackageBuilder()
-                .UpgradeCode(Guid.Empty);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.UpgradeCode(Guid.Empty), Throws.ArgumentException);
         }
-        
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+
+        [Test]
         public void InvalidTwoPartVersionThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid())
-                .Version(new Version(0, 0))
-                .Build(_filename);
+                .Version(new Version(0, 0));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void InvalidThreePartVersionThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid())
-                .Version(new Version(0, 0, 0))
-                .Build(_filename);
+                .Version(new Version(0, 0, 0));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void InvalidFourPartVersionThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid())
-                .Version(new Version(0, 0, 0, 0))
-                .Build(_filename);
+                .Version(new Version(0, 0, 0, 0));
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Test]
         public void NullVersionThrows()
         {
-            new PackageBuilder()
-                .Version(null);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.Version(null), Throws.ArgumentNullException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void MissingFileThrows()
         {
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .Version(new Version(1, 2, 3))
                 .UpgradeCode(Guid.NewGuid())
-                .File("missing.file")
-                .Build(_filename);
+                .File("missing.file");
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void TooManyFilesThrows()
         {
             var builder = new PackageBuilder()
@@ -208,110 +207,110 @@ namespace Deploy
             for (int i = 0; i < 60000; i++)
                 builder.File("file" + i);
 
-            builder.Build(_filename);
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void NullFilenameThrows()
         {
-            new PackageBuilder()
-                .File(null);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.File(null), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void EmptyFilenameThrows()
         {
-            new PackageBuilder()
-                .File(string.Empty);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.File(string.Empty), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void MissingShortcutIconThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
 
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .Version(new Version(1, 2, 3))
                 .UpgradeCode(Guid.NewGuid())
-                .File(file, "missing.ico")
-                .Build(_filename);
+                .File(file, "missing.ico");
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void MissingShortcutNameThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
 
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .Version(new Version(1, 2, 3))
                 .UpgradeCode(Guid.NewGuid())
-                .File(file, file + ".ico")
-                .Build(_filename);
+                .File(file, file + ".ico");
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void InvalidShortcutNameThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
 
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .Version(new Version(1, 2, 3))
                 .UpgradeCode(Guid.NewGuid())
-                .File(file, file + ".ico", "name*with\\invalid?path")
-                .Build(_filename);
+                .File(file, file + ".ico", "name*with\\invalid?path");
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(PackageException))]
+        [Test]
         public void InvalidIconExtensionThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
 
-            new PackageBuilder()
+            var builder = new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X86)
                 .ProductName("product")
                 .Version(new Version(1, 2, 3))
                 .UpgradeCode(Guid.NewGuid())
-                .File(file, "missing.none")
-                .Build(_filename);
+                .File(file, "missing.none");
+
+            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void BuildWithNullFilenameThrows()
         {
-            new PackageBuilder()
-                .Build(null);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.Build(null), Throws.ArgumentException);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void BuildWithEmptyFilenameThrows()
         {
-            new PackageBuilder()
-                .Build(string.Empty);
+            var builder = new PackageBuilder();
+
+            Assert.That(() => builder.Build(string.Empty), Throws.ArgumentException);
         }
 
-        [TestMethod]
+        [Test]
         public void PackageBuilds()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
-            
+
             new PackageBuilder()
                 .Author("author")
                 .Platform(PackagePlatform.X64)
