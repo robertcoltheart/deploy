@@ -27,9 +27,6 @@ Task("Clean")
     CleanDirectories("./src/**/bin");
     CleanDirectories("./src/**/obj");
 
-    DeleteFiles("./docs/api/*.yml");
-    DeleteFiles("./docs/api/.manifest");
-
     if (DirectoryExists(artifacts))
         DeleteDirectory(artifacts, true);
 });
