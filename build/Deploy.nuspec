@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Deploy</id>
+        <version>$version$</version>
+        <title>Deploy</title>
+        <authors>Robert Coltheart</authors>
+        <owners>Robert Coltheart</owners>
+        <licenseUrl>https://github.com/robertcoltheart/Deploy/raw/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/robertcoltheart/Deploy</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>A fluent builder for MSI installation packages.</description>
+        <summary>A fluent builder for MSI installation packages.</summary>
+        <tags>MSI package installation setup</tags>
+    </metadata>
+
+    <files>
+        <file src="Deploy/bin/Release/Deploy.dll" target="lib/net45" />
+        <file src="Deploy/bin/Release/Deploy.xml" target="lib/net45" />
+    </files>
+</package>
