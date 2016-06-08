@@ -1,11 +1,14 @@
+# Set dummy version, as it will be replaced by GitVersion
+version: x-{build}
+
 build_script:
   - ps: .\build.ps1
-  
+
 test: off
 
 artifacts:
   - path: artifacts\*.nupkg
-  
+
 notifications:
   - provider: Email
     on_build_success: false
