@@ -77,19 +77,8 @@ Task("Test")
         Results = testResults
     });
     
-    //if (BuildSystem.IsRunningOnAppVeyor)
-    //    AppVeyor.UploadTestResults(testResults);
-
     if (BuildSystem.IsRunningOnAppVeyor)
-    {
-        var baseUri = EnvironmentVariable("APPVEYOR_URL").TrimEnd('/');
-        var url = string.Format("{0}/api/testresults/nunit3/{1}", baseUri, AppVeyor.Environment.JobId);
-        
-        using (var r = new System.Net.WebClient())
-        {
-            r.UploadFile(url, testResults);
-        }        
-    }
+        AppVeyor.UploadTestResults(testResults, AppVeyorTestResultsType.NUnit3);
 });
 
 Task("Package")
