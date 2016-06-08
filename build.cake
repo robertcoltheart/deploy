@@ -44,6 +44,11 @@ Task("Versioning")
     .WithCriteria(() => !IsRunningOnUnix())
     .Does(() => 
 {
+    GitVersion(new GitVersionSettings
+    {
+        OutputType = GitVersionOutput.BuildServer
+    });
+
     var result = GitVersion(new GitVersionSettings
     {
         UpdateAssemblyInfo = true
@@ -53,8 +58,8 @@ Task("Versioning")
 });
 
 Task("Build")
-    .IsDependentOn("Restore")
     .IsDependentOn("Versioning")
+    .IsDependentOn("Restore")
     .Does(() => 
 {
     CreateDirectory(artifacts);
