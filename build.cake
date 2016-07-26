@@ -1,6 +1,3 @@
-#addin "nuget:?package=Cake.DocFx&version=0.1.6"
-#addin "nuget:?package=Cake.ReSharperReports&version=0.3.1"
-
 #tool "nuget:?package=GitVersion.CommandLine&version=3.6.1"
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.4.1"
 
