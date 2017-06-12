@@ -1,6 +1,8 @@
 # Set dummy version, as it will be replaced by GitVersion
 version: x-{build}
 
+image: Visual Studio 2017
+
 build_script:
   - ps: .\build.ps1
 
