@@ -1,65 +1,57 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using NUnit.Framework;
+using Xunit;
 
 namespace Deploy
 {
-    [TestFixture]
     public class PackageExceptionTests
     {
-        [Test]
+        [Fact]
         public void IsTypeOfException()
         {
-            Assert.IsTrue(typeof(Exception).IsAssignableFrom(typeof(PackageException)), "Type is not an exception.");
+            Assert.IsAssignableFrom<Exception>(new PackageException());
         }
 
-        [Test]
+        [Fact]
         public void InnerExceptionSet()
         {
             var innerException = new Exception();
             var exception = new PackageException("msg", innerException);
 
-            Assert.AreSame(innerException, exception.InnerException);
+            Assert.Same(innerException, exception.InnerException);
         }
 
-        [Test]
+        [Fact]
         public void HasMessage()
         {
             var exception = new PackageException("msg");
 
-            Assert.AreEqual("msg", exception.Message);
+            Assert.Equal("msg", exception.Message);
         }
 
-        [Test]
+        [Fact]
         public void IsSerializableDecorated()
         {
-            Assert.IsTrue(typeof(PackageException).GetCustomAttributes(typeof(SerializableAttribute), true).Length == 1, "Type must be serializable.");
+            Assert.True(typeof(PackageException).GetCustomAttributes(typeof(SerializableAttribute), true).Length == 1, "Type must be serializable.");
         }
 
-        [Test]
+        [Fact]
         public void IsSerializable()
         {
             var exception = new PackageException();
 
-            try
+            using (var stream = new MemoryStream())
             {
-                using (var stream = new MemoryStream())
-                {
-                    var formatter = new BinaryFormatter();
-                    formatter.Serialize(stream, exception);
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(stream, exception);
 
-                    stream.Position = 0;
+                stream.Position = 0;
 
-                    exception = (PackageException)formatter.Deserialize(stream);
-                }
-            }
-            catch (Exception)
-            {
-                Assert.Fail("Type must be serializable.");
+                exception = (PackageException) formatter.Deserialize(stream);
             }
 
-            Assert.IsNotNull(exception, "Type could not be deserialized.");
+            Assert.NotNull(exception);
         }
     }
 }
