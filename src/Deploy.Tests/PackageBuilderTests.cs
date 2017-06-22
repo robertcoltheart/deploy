@@ -1,28 +1,25 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
+using Xunit;
 
 namespace Deploy
 {
-    [TestFixture]
-    public class PackageBuilderTests
+    public class PackageBuilderTests : IDisposable
     {
         private string _filename;
 
-        [SetUp]
-        public void Setup()
+        public PackageBuilderTests()
         {
             _filename = Path.GetTempFileName();
         }
 
-        [TearDown]
-        public void Cleanup()
+        public void Dispose()
         {
             File.Delete(_filename);
         }
 
-        [Test]
+        [Fact]
         public void NoProductNameThrows()
         {
             var builder = new PackageBuilder()
@@ -31,10 +28,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidProductNameThrows()
         {
             var builder = new PackageBuilder()
@@ -44,42 +43,52 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NullProductNameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.ProductName(null), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.ProductName(null));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void EmptyProductNameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.ProductName(string.Empty), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.ProductName(string.Empty));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NullProductIconThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.ProductIcon(null), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.ProductIcon(null));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void EmptyProductIconThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.ProductIcon(string.Empty), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.ProductIcon(string.Empty));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NoVersionThrows()
         {
             var builder = new PackageBuilder()
@@ -88,10 +97,12 @@ namespace Deploy
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid());
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NoAuthorSucceeds()
         {
             new PackageBuilder()
@@ -102,7 +113,7 @@ namespace Deploy
                 .Build(_filename);
         }
 
-        [Test]
+        [Fact]
         public void NoPlatformUsesDefault()
         {
             new PackageBuilder()
@@ -113,7 +124,7 @@ namespace Deploy
                 .Build(_filename);
         }
 
-        [Test]
+        [Fact]
         public void NoUpgradeCodeThrows()
         {
             var builder = new PackageBuilder()
@@ -122,18 +133,22 @@ namespace Deploy
                 .ProductName("product")
                 .Version(new Version(1, 2, 3));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void EmptyUpgradeCodeThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.UpgradeCode(Guid.Empty), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.UpgradeCode(Guid.Empty));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidTwoPartVersionThrows()
         {
             var builder = new PackageBuilder()
@@ -143,10 +158,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidThreePartVersionThrows()
         {
             var builder = new PackageBuilder()
@@ -156,10 +173,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0, 0));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidFourPartVersionThrows()
         {
             var builder = new PackageBuilder()
@@ -169,18 +188,22 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0, 0, 0));
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NullVersionThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.Version(null), Throws.ArgumentNullException);
+            var exception = Record.Exception(() => builder.Version(null));
+
+            Assert.IsType<ArgumentNullException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void MissingFileThrows()
         {
             var builder = new PackageBuilder()
@@ -191,10 +214,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File("missing.file");
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void TooManyFilesThrows()
         {
             var builder = new PackageBuilder()
@@ -207,26 +232,32 @@ namespace Deploy
             for (int i = 0; i < 60000; i++)
                 builder.File("file" + i);
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void NullFilenameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.File(null), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.File(null));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void EmptyFilenameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.File(string.Empty), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.File(string.Empty));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void MissingShortcutIconThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
@@ -239,10 +270,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, "missing.ico");
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void MissingShortcutNameThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
@@ -255,10 +288,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, file + ".ico");
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidShortcutNameThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
@@ -271,10 +306,12 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, file + ".ico", "name*with\\invalid?path");
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void InvalidIconExtensionThrows()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
@@ -287,26 +324,32 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, "missing.none");
 
-            Assert.That(() => builder.Build(_filename), Throws.InstanceOf<PackageException>());
+            var exception = Record.Exception(() => builder.Build(_filename));
+
+            Assert.IsType<PackageException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void BuildWithNullFilenameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.Build(null), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.Build(null));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void BuildWithEmptyFilenameThrows()
         {
             var builder = new PackageBuilder();
 
-            Assert.That(() => builder.Build(string.Empty), Throws.ArgumentException);
+            var exception = Record.Exception(() => builder.Build(string.Empty));
+
+            Assert.IsType<ArgumentException>(exception);
         }
 
-        [Test]
+        [Fact]
         public void PackageBuilds()
         {
             string file = Directory.GetFiles(Environment.CurrentDirectory).First();
@@ -322,8 +365,8 @@ namespace Deploy
 
             var info = new FileInfo(_filename);
 
-            Assert.IsTrue(info.Exists, "Package was not built");
-            Assert.IsTrue(info.Length > 0, "Package was empty");
+            Assert.True(info.Exists, "Package was not built");
+            Assert.True(info.Length > 0, "Package was empty");
         }
     }
 }
