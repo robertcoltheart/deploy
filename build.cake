@@ -26,7 +26,12 @@ Task("Clean")
     CleanDirectories("./src/**/obj");
 
     if (DirectoryExists(artifacts))
-        DeleteDirectory(artifacts, true);
+    {
+        DeleteDirectory(artifacts, new DeleteDirectorySettings {
+            Recursive = true,
+            Force = true
+        });
+    }
 });
 
 Task("Restore")
