@@ -10,7 +10,7 @@ var nugetApiKey = Argument("nugetapikey", EnvironmentVariable("NUGET_API_KEY"));
 //////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
 //////////////////////////////////////////////////////////////////////
-var version = "1.0.0";
+var version = "0.1.0";
 var versionNumber = "1.0.0";
 
 var artifacts = Directory("./artifacts");
@@ -27,7 +27,8 @@ Task("Clean")
 
     if (DirectoryExists(artifacts))
     {
-        DeleteDirectory(artifacts, new DeleteDirectorySettings {
+        DeleteDirectory(artifacts, new DeleteDirectorySettings 
+        {
             Recursive = true,
             Force = true
         });
@@ -113,21 +114,27 @@ Task("Package")
 
 Task("Publish")
     .IsDependentOn("Package")
+    .WithCriteria(() => BuildSystem.IsRunningOnAppVeyor)
+    .WithCriteria(() => AppVeyor.Environment.Repository.Tag.IsTag)
     .Does(() =>
 {
-    var package = "./artifacts/Deploy." + version + ".nupkg";
+    var packages = GetFiles("./artifacts/**/*.nupkg");
 
-    NuGetPush(package, new NuGetPushSettings
+    foreach (var package in packages)
     {
-        ApiKey = nugetApiKey
-    });
+        DotNetCoreNuGetPush(package.FullPath, new DotNetCoreNuGetPushSettings
+        {
+            Source = "https://www.nuget.org/api/v2/package",
+            ApiKey = nugetApiKey
+        });
+    }
 });
 
 //////////////////////////////////////////////////////////////////////
 // TASK TARGETS
 //////////////////////////////////////////////////////////////////////
 Task("Default")
-    .IsDependentOn("Package");
+    .IsDependentOn("Publish");
 
 //////////////////////////////////////////////////////////////////////
 // EXECUTION
