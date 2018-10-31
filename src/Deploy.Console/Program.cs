@@ -39,9 +39,12 @@ namespace Deploy.Console
         private static uint[] fat;
         private static uint[] miniFat;
         private static DirectoryEntry[] directoryEntries;
+        private static DirectoryEntry root;
         private static byte[] miniStream;
         private static int bytesPerString;
         private static StringValue[] strings;
+        private static Row[] tables;
+        private static Row[] columns;
 
         public static void Main(string[] args)
         {
@@ -53,6 +56,17 @@ namespace Deploy.Console
             var encoding = new MsiEncoding();
             //encoding.GetBytes("Root Entry");
             //encoding.GetBytes("_Validation");
+
+            var files = Directory.GetFiles(@"C:\Windows\Installer", "*.msi");
+
+            foreach (var file in files)
+            {
+                using (var stream = File.OpenRead(file))
+                using (var reader = new BinaryReader(stream))
+                {
+                    ReadHeader(reader);
+                }
+            }
 
             using (var reader = new BinaryReader(File.OpenRead(myFile)))
             {
@@ -87,40 +101,25 @@ namespace Deploy.Console
 
             sectorCutoff = miniStreamCutoffLength;
 
-            var difat = ReadDifat(reader, initialDifat, firstDifatSector);
-            fat = ReadFat(reader, difat);
+            fat = ReadFat(reader, initialDifat, firstDifatSector);
             miniFat = ReadMiniFat(reader, firstMiniFatSector);
-            directoryEntries = ReadDirectoryEntries(reader, firstDirectorySector).ToArray();
 
-            var root = directoryEntries.First();
+            directoryEntries = ReadDirectoryEntries(reader, firstDirectorySector).ToArray();
+            root = directoryEntries.First();
 
             miniStream = ReadStream(reader, root.Sector, root.Length);
             strings = ReadStrings(reader).ToArray();
 
-            var tables = ReadTables(reader).ToArray();
-            var columns = ReadColumns(reader).ToArray();
+            tables = ReadTables(reader).ToArray();
+            columns = ReadColumns(reader).ToArray();
+
             ReadSummaryInformation(reader);
         }
 
-        private static uint[] ReadDifat(BinaryReader reader, uint[] initialDifat, uint firstDifatSector)
+        private static uint[] ReadFat(BinaryReader reader, uint[] initialDifat, uint firstDifatSector)
         {
-            var sectors = new List<uint>(initialDifat);
+            var difat = ReadDifat(reader, initialDifat, firstDifatSector);
 
-            var sector = firstDifatSector;
-
-            while (sector != EndOfChain)
-            {
-                var block = reader.ReadUint32Array(sectorLength / 4);
-                sectors.AddRange(block);
-
-                sector = block.Last();
-            }
-
-            return sectors.ToArray();
-        }
-
-        private static uint[] ReadFat(BinaryReader reader, uint[] difat)
-        {
             var blocks = new List<uint>();
 
             foreach (var sector in difat)
@@ -136,6 +135,25 @@ namespace Deploy.Console
             }
 
             return blocks.ToArray();
+        }
+
+        private static uint[] ReadDifat(BinaryReader reader, uint[] initialDifat, uint firstDifatSector)
+        {
+            var sectors = new List<uint>(initialDifat);
+
+            var sector = firstDifatSector;
+
+            while (sector != EndOfChain && sector != FreeSector)
+            {
+                SetPosition(reader, sector);
+
+                var block = reader.ReadUint32Array(sectorLength / 4);
+                sectors.AddRange(block.Take(block.Length - 1));
+
+                sector = block.Last();
+            }
+
+            return sectors.ToArray();
         }
 
         private static uint[] ReadMiniFat(BinaryReader reader, uint firstSector)
@@ -158,8 +176,6 @@ namespace Deploy.Console
 
         private static void ReadSummaryInformation(BinaryReader reader)
         {
-            var a = Environment.OSVersion;
-
             var buffer = ReadStream(reader, "\u0005SummaryInformation");
 
             using (var stream = new MemoryStream(buffer))
@@ -243,14 +259,14 @@ namespace Deploy.Console
                     var startingSector = reader.ReadUInt32();
                     var streamLength = reader.ReadUInt64();
 
-                    using (var stream = new MemoryStream(name))
-                    using (var nameReader = new BinaryReader(stream))
-                    {
-                        var nameArray = nameReader.ReadUint16Array(32);
+                    if (nameLength > 0)
+                        yield return new DirectoryEntry(DecodeName(name), startingSector, streamLength);
 
-                        if (nameLength > 0)
-                            yield return new DirectoryEntry(DecodeName(nameArray), startingSector, streamLength);
-                    }
+                    //using (var stream = new MemoryStream(name))
+                    //using (var nameReader = new BinaryReader(stream))
+                    //{
+                    //    var nameArray = nameReader.ReadUint16Array(32);
+                    //}
                 }
             }
         }
@@ -459,6 +475,36 @@ namespace Deploy.Console
             }
 
             throw new FormatException();
+        }
+
+        private static string DecodeName(byte[] bytes)
+        {
+            const string base64Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz._";
+
+            var chars = new List<char>();
+
+            for (var i = 0; i < bytes.Length; i += 2)
+            {
+                var value = BitConverter.ToUInt16(bytes, i);
+
+                if (value >= 0x3800 && value < 0x4800)
+                {
+                    var c = value - 0x3800;
+
+                    chars.Add(base64Chars[c & 0x3f]);
+                    chars.Add(base64Chars[(c >> 6) & 0x3f]);
+                }
+                else if (value >= 0x4800 && value < 0x4840)
+                {
+                    chars.Add(base64Chars[value - 0x4800]);
+                }
+                else if (value != 0x4840)
+                {
+                    chars.Add((char)value);
+                }
+            }
+
+            return new string(chars.ToArray()).TrimEnd('\0');
         }
 
         private static string DecodeName(ushort[] chars)
