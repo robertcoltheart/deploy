@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,14 @@ namespace Deploy.Console
         private const uint EndOfChain = 0xffff_fffe;
         private const uint FreeSector = 0xffff_ffff;
         private const int LongStringLength = 3;
+
+        private const uint Valid = 0x0100;
+        private const uint Localizable = 0x200;
+        private const uint String = 0x0800;
+        private const uint Nullable = 0x1000;
+        private const uint PrimaryKey = 0x2000;
+        private const uint Temporary = 0x4000;
+        private const uint Unknown = 0x8000;
 
         private const int Dictionary = 0;
         private const int CodePage = 1;
@@ -45,6 +54,7 @@ namespace Deploy.Console
         private static StringValue[] strings;
         private static Row[] tables;
         private static Row[] columns;
+        private static IDictionary<string, Row[]> rows;
 
         public static void Main(string[] args)
         {
@@ -68,10 +78,10 @@ namespace Deploy.Console
                 }
             }
 
-            using (var reader = new BinaryReader(File.OpenRead(myFile)))
-            {
-                ReadHeader(reader);
-            }
+            //using (var reader = new BinaryReader(File.OpenRead(@"C:\Windows\Installer\2ef3ba6.msi")))
+            //{
+            //    ReadHeader(reader);
+            //}
         }
 
         private static void ReadHeader(BinaryReader reader)
@@ -112,6 +122,8 @@ namespace Deploy.Console
 
             tables = ReadTables(reader).ToArray();
             columns = ReadColumns(reader).ToArray();
+
+            rows = ReadAllTables(reader).ToDictionary(x => x.Item1, x => x.Item2);
 
             ReadSummaryInformation(reader);
         }
@@ -261,16 +273,10 @@ namespace Deploy.Console
 
                     if (nameLength > 0)
                         yield return new DirectoryEntry(DecodeName(name), startingSector, streamLength);
-
-                    //using (var stream = new MemoryStream(name))
-                    //using (var nameReader = new BinaryReader(stream))
-                    //{
-                    //    var nameArray = nameReader.ReadUint16Array(32);
-                    //}
                 }
             }
         }
-
+        
         private static IEnumerable<StringValue> ReadStrings(BinaryReader reader)
         {
             var pool = ReadStream(reader, "_StringPool");
@@ -289,7 +295,9 @@ namespace Deploy.Console
 
                 var encoding = Encoding.GetEncoding(codePage);
 
-                for (var i = 1; i < pool.Length / 4; i++)
+                var id = 1;
+
+                while (poolStream.Position < poolStream.Length)
                 {
                     int length = poolReader.ReadUInt16();
                     int refs = poolReader.ReadUInt16();
@@ -298,12 +306,26 @@ namespace Deploy.Console
                         continue;
 
                     if (length == 0)
-                        length = (refs << 16) | length;
+                        length = poolReader.ReadUInt16() + (poolReader.ReadUInt16() << 16);
 
                     var value = encoding.GetString(dataReader.ReadBytes(length));
 
-                    yield return new StringValue(i, value);
+                    yield return new StringValue(id++, value);
                 }
+            }
+        }
+
+        private static IEnumerable<Tuple<string, Row[]>> ReadAllTables(BinaryReader reader)
+        {
+            foreach (var table in tables.Select(x => x.Data[0].ToString()))
+            {
+                var tableColumns = columns
+                    .Where(x => x.Data[0].ToString() == table)
+                    .Select(x => new ColumnInfo(int.Parse(x.Data[1].ToString()), x.Data[2].ToString(), uint.Parse(x.Data[3].ToString())));
+
+                var tableRows = ReadTable(reader, tableColumns.ToArray(), table);
+
+                yield return Tuple.Create(table, tableRows.ToArray());
             }
         }
 
@@ -311,7 +333,7 @@ namespace Deploy.Console
         {
             var columns = new[]
             {
-                new ColumnInfo(1, "Name", 0)
+                new ColumnInfo(1, "Name", Valid | String | PrimaryKey | 64)
             };
 
             return ReadTable(reader, columns, "_Tables");
@@ -321,10 +343,10 @@ namespace Deploy.Console
         {
             var columns = new[]
             {
-                new ColumnInfo(1, "Table", 0),
-                new ColumnInfo(2, "Number", 1),
-                new ColumnInfo(3, "Name", 0),
-                new ColumnInfo(4, "Type", 1)
+                new ColumnInfo(1, "Table", Valid | String | PrimaryKey | 64),
+                new ColumnInfo(2, "Number", Valid | PrimaryKey | 2),
+                new ColumnInfo(3, "Name", Valid | String | 64),
+                new ColumnInfo(4, "Type", Valid | 2)
             };
 
             return ReadTable(reader, columns, "_Columns");
@@ -345,13 +367,14 @@ namespace Deploy.Console
                 for (var i = 0; i < columns.Length; i++)
                 {
                     var column = columns[i];
+                    var columnLength = GetColumnLength(column);
 
                     for (var j = 0; j < rowCount; j++)
                     {
                         if (rows[j] == null)
                             rows[j] = new object[columns.Length];
 
-                        if (column.Type == 0)
+                        if ((column.Type & String) == String)
                         {
                             var id = bytesPerString == 2
                                 ? dataReader.ReadUInt16()
@@ -359,9 +382,13 @@ namespace Deploy.Console
 
                             rows[j][i] = strings.FirstOrDefault(x => x.Id == id)?.Value;
                         }
-                        else if (column.Type == 1)
+                        else if (columnLength == 2)
                         {
                             rows[j][i] = dataReader.ReadUInt16();
+                        }
+                        else if (columnLength == 4)
+                        {
+                            rows[j][i] = dataReader.ReadUInt32();
                         }
                     }
                 }
@@ -371,24 +398,31 @@ namespace Deploy.Console
             }
         }
 
+        private static int GetColumnLength(ColumnInfo column)
+        {
+            if ((column.Type & ~Nullable) == (String | Valid))
+                return 2;
+
+            if ((column.Type & String) == String)
+                return bytesPerString;
+
+            if ((column.Type & 0xff) <= 2)
+                return 2;
+
+            return 4;
+        }
+
         private static int GetRowLength(ColumnInfo[] columns)
         {
-            var length = 0;
-
-            foreach (var column in columns)
-            {
-                if (column.Type == 0)
-                    length += bytesPerString;
-                else if (column.Type == 1)
-                    length += 2;
-            }
-
-            return length;
+            return columns.Select(GetColumnLength).Sum();
         }
 
         private static byte[] ReadStream(BinaryReader reader, string name)
         {
-            var entry = directoryEntries.First(x => x.Name == name);
+            var entry = directoryEntries.FirstOrDefault(x => x.Name == name);
+
+            if (entry == null)
+                return Array.Empty<byte>();
 
             if (entry.Length < sectorCutoff)
                 return ReadMiniStream(entry.Sector, entry.Length);

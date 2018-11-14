@@ -19,7 +19,7 @@ Vld: 0000_0001_0000_0000 Always present
     /// </summary>
     public class ColumnInfo
     {
-        public ColumnInfo(int id, string name, int type)
+        public ColumnInfo(int id, string name, uint type)
         {
             Id = id;
             Name = name;
@@ -30,6 +30,6 @@ Vld: 0000_0001_0000_0000 Always present
 
         public string Name { get; }
 
-        public int Type { get; }
+        public uint Type { get; }
     }
 }
