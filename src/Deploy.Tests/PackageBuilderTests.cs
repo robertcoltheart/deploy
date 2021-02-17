@@ -7,16 +7,16 @@ namespace Deploy
 {
     public class PackageBuilderTests : IDisposable
     {
-        private string _filename;
+        private readonly string filename;
 
         public PackageBuilderTests()
         {
-            _filename = Path.GetTempFileName();
+            filename = Path.GetTempFileName();
         }
 
         public void Dispose()
         {
-            File.Delete(_filename);
+            File.Delete(filename);
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -43,7 +43,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -97,7 +97,7 @@ namespace Deploy
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid());
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -110,7 +110,7 @@ namespace Deploy
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3))
-                .Build(_filename);
+                .Build(filename);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Deploy
                 .ProductName("product")
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3))
-                .Build(_filename);
+                .Build(filename);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Deploy
                 .ProductName("product")
                 .Version(new Version(1, 2, 3));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -158,7 +158,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -173,7 +173,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0, 0));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -188,7 +188,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(0, 0, 0, 0));
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -214,7 +214,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File("missing.file");
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -232,7 +232,7 @@ namespace Deploy
             for (int i = 0; i < 60000; i++)
                 builder.File("file" + i);
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -270,7 +270,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, "missing.ico");
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -288,7 +288,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, file + ".ico");
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -306,7 +306,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, file + ".ico", "name*with\\invalid?path");
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -324,7 +324,7 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .File(file, "missing.none");
 
-            var exception = Record.Exception(() => builder.Build(_filename));
+            var exception = Record.Exception(() => builder.Build(filename));
 
             Assert.IsType<PackageException>(exception);
         }
@@ -361,9 +361,9 @@ namespace Deploy
                 .UpgradeCode(Guid.NewGuid())
                 .Version(new Version(1, 2, 3))
                 .File(file)
-                .Build(_filename);
+                .Build(filename);
 
-            var info = new FileInfo(_filename);
+            var info = new FileInfo(filename);
 
             Assert.True(info.Exists, "Package was not built");
             Assert.True(info.Length > 0, "Package was empty");

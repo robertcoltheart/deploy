@@ -7,22 +7,23 @@ namespace Deploy.Data
     internal class MsiConnection : IDisposable
     {
         private const int CreateMode = 3;
+
         private const int MsiVersion = 500;
+
         private const int Properties = 2;
 
-        private readonly IntPtr _handle;
+        private readonly IntPtr handle;
 
         public MsiConnection(string filename)
         {
-            ThrowOnFailure(SafeNativeMethods.MsiOpenDatabase(filename, new IntPtr(CreateMode), out _handle));
+            ThrowOnFailure(SafeNativeMethods.MsiOpenDatabase(filename, new IntPtr(CreateMode), out handle));
         }
 
-        public void Commit(string productName, string author, PackagePlatform platform, int languageCode, Guid productCode)
+        public void Commit(string productName, string author, PackagePlatform platform, int languageCode,
+            Guid productCode)
         {
-            IntPtr infoHandle;
+            ThrowOnFailure(SafeNativeMethods.MsiGetSummaryInformation(handle, null, 20, out var infoHandle));
 
-            ThrowOnFailure(SafeNativeMethods.MsiGetSummaryInformation(_handle, null, 20, out infoHandle));
-            
             SetProperty(infoHandle, 2, 30, 0, 0, "Installation Database");
             SetProperty(infoHandle, 3, 30, 0, 0, productName);
             SetProperty(infoHandle, 4, 30, 0, 0, author);
@@ -35,19 +36,19 @@ namespace Deploy.Data
             ThrowOnFailure(SafeNativeMethods.MsiSummaryInfoPersist(infoHandle));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(infoHandle));
 
-            ThrowOnFailure(SafeNativeMethods.MsiDatabaseCommit(_handle));
+            ThrowOnFailure(SafeNativeMethods.MsiDatabaseCommit(handle));
         }
 
         public void Dispose()
         {
-            ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(_handle));
+            ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(handle));
         }
 
         public void Execute(string sql)
         {
             IntPtr viewHandle;
 
-            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, sql, out viewHandle));
+            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(handle, sql, out viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiViewExecute(viewHandle, IntPtr.Zero));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(viewHandle));
         }
@@ -61,21 +62,21 @@ namespace Deploy.Data
             IntPtr recordHandle = SafeNativeMethods.MsiCreateRecord(1);
 
             ThrowOnFailure(SafeNativeMethods.MsiRecordSetStream(recordHandle, 1, filename));
-            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, query, out viewHandle));
+            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(handle, query, out viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiViewExecute(viewHandle, recordHandle));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(recordHandle));
         }
-        
+
         private void SetProperty(IntPtr infoHandle, uint property, uint type, int intValue, long timeValue, string stringValue)
         {
             ThrowOnFailure(SafeNativeMethods.MsiSummaryInfoSetProperty(infoHandle, property, type, intValue, ref timeValue, stringValue ?? string.Empty));
         }
-        
+
         private static void ThrowOnFailure(uint error)
         {
             if (error != 0)
-                throw new Win32Exception((int)error);
+                throw new Win32Exception((int) error);
         }
     }
 }

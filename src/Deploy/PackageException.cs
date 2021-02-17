@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace Deploy
 {
     /// <summary>
     /// The exception that is thrown when an installation package fails to build.
     /// </summary>
-    [Serializable]
     public class PackageException : Exception
     {
         /// <summary>
@@ -33,16 +31,6 @@ namespace Deploy
         /// <param name="innerException">The inner exception that is the cause of the exception.</param>
         public PackageException(string message, Exception innerException) 
             : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PackageException"/> class.
-        /// </summary>
-        /// <param name="info">The object that holds the serialized object data.</param>
-        /// <param name="context">The contextual information about the source or destination.</param>
-        protected PackageException(SerializationInfo info, StreamingContext context) 
-            : base(info, context)
         {
         }
     }

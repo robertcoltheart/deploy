@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Deploy
 {
-    public static class BinaryWriterExtensions
+    internal static class BinaryWriterExtensions
     {
         public static void WriteInt24(this BinaryWriter writer, int value)
         {

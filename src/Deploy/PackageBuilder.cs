@@ -10,27 +10,33 @@ namespace Deploy
     /// </summary>
     public class PackageBuilder : IPackage
     {
-        private readonly List<PackageFile> _files = new List<PackageFile>();
-        private string _author;
-        private PackagePlatform _platform;
-        private string _productIcon;
-        private string _productName;
-        private Guid _upgradeCode;
-        private Version _version;
+        private readonly List<PackageFile> files = new List<PackageFile>();
 
-        string IPackage.ProductName => _productName;
+        private string packageAuthor;
 
-        string IPackage.ProductIcon => _productIcon;
+        private PackagePlatform packagePlatform;
 
-        string IPackage.Author => _author;
+        private string packageProductIcon;
 
-        PackagePlatform IPackage.Platform => _platform;
+        private string packageProductName;
 
-        Guid IPackage.UpgradeCode => _upgradeCode;
+        private Guid packageUpgradeCode;
 
-        Version IPackage.Version => _version;
+        private Version packageVersion;
 
-        IEnumerable<PackageFile> IPackage.Files => _files;
+        string IPackage.ProductName => packageProductName;
+
+        string IPackage.ProductIcon => packageProductIcon;
+
+        string IPackage.Author => packageAuthor;
+
+        PackagePlatform IPackage.Platform => packagePlatform;
+
+        Guid IPackage.UpgradeCode => packageUpgradeCode;
+
+        Version IPackage.Version => packageVersion;
+
+        IEnumerable<PackageFile> IPackage.Files => files;
 
         /// <summary>
         /// Sets the name of the product.
@@ -45,9 +51,12 @@ namespace Deploy
         public PackageBuilder ProductName(string productName)
         {
             if (string.IsNullOrEmpty(productName))
+            {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(productName));
+            }
 
-            _productName = productName;
+            packageProductName = productName;
+
             return this;
         }
 
@@ -63,9 +72,12 @@ namespace Deploy
         public PackageBuilder ProductIcon(string productIcon)
         {
             if (string.IsNullOrEmpty(productIcon))
+            {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(productIcon));
+            }
 
-            _productIcon = productIcon;
+            packageProductIcon = productIcon;
+
             return this;
         }
 
@@ -76,7 +88,8 @@ namespace Deploy
         /// <returns>The package builder.</returns>
         public PackageBuilder Author(string author)
         {
-            _author = author;
+            packageAuthor = author;
+
             return this;
         }
 
@@ -91,7 +104,8 @@ namespace Deploy
         /// <returns>The package builder.</returns>
         public PackageBuilder Platform(PackagePlatform platform)
         {
-            _platform = platform;
+            packagePlatform = platform;
+
             return this;
         }
 
@@ -109,9 +123,12 @@ namespace Deploy
         public PackageBuilder UpgradeCode(Guid upgradeCode)
         {
             if (upgradeCode == Guid.Empty)
+            {
                 throw new ArgumentException(Resources.Argument_EmptyGuid, nameof(upgradeCode));
+            }
 
-            _upgradeCode = upgradeCode;
+            packageUpgradeCode = upgradeCode;
+
             return this;
         }
 
@@ -128,10 +145,8 @@ namespace Deploy
         /// <returns>The package builder.</returns>
         public PackageBuilder Version(Version version)
         {
-            if (version == null)
-                throw new ArgumentNullException(nameof(version));
+            packageVersion = version ?? throw new ArgumentNullException(nameof(version));
 
-            _version = version;
             return this;
         }
 
@@ -150,9 +165,12 @@ namespace Deploy
         public PackageBuilder File(string filename, string shortcutIcon = null, string shortcutName = null)
         {
             if (string.IsNullOrEmpty(filename))
+            {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(filename));
+            }
 
-            _files.Add(new PackageFile(filename, shortcutIcon, shortcutName));
+            files.Add(new PackageFile(filename, shortcutIcon, shortcutName));
+
             return this;
         }
 
@@ -165,7 +183,9 @@ namespace Deploy
         public void Build(string filename)
         {
             if (string.IsNullOrEmpty(filename))
+            {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(filename));
+            }
 
             var validator = new PackageValidator(this);
             validator.Validate();
@@ -173,7 +193,9 @@ namespace Deploy
             try
             {
                 using (var writer = new PackageWriter(this, filename))
+                {
                     writer.Write();
+                }
             }
             catch (Exception ex)
             {

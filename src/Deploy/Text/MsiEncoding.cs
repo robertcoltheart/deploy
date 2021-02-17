@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Deploy.Text
 {
-    public class MsiEncoding : Encoding
+    internal class MsiEncoding : Encoding
     {
         private const string Base64Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz._";
 
@@ -15,7 +15,9 @@ namespace Deploy.Text
             var sourceIndex = index;
 
             if (IncludePreamble)
+            {
                 byteCount += 2;
+            }
 
             while (sourceIndex < index + count)
             {
@@ -23,7 +25,9 @@ namespace Deploy.Text
                 var next = chars.GetOrDefault(sourceIndex);
 
                 if (Base64Chars.IndexOf(current) != -1 && Base64Chars.IndexOf(next) != -1)
+                {
                     sourceIndex++;
+                }
 
                 byteCount += 2;
             }
@@ -94,9 +98,13 @@ namespace Deploy.Text
                 var value = BitConverter.ToUInt16(bytes, i);
 
                 if (value >= 0x3800 && value < 0x4800)
+                {
                     charCount += 2;
+                }
                 else if (value != 0x4840)
+                {
                     charCount++;
+                }
             }
 
             return charCount;

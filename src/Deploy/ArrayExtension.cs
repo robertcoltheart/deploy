@@ -2,12 +2,12 @@
 
 namespace Deploy
 {
-    public static class ArrayExtension
+    internal static class ArrayExtension
     {
         public static T GetOrDefault<T>(this T[] array, int index)
         {
             if (index < 0 || index >= array.Length)
-                return default(T);
+                return default;
 
             return array[index];
         }

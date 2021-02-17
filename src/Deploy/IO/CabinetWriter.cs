@@ -9,39 +9,47 @@ namespace Deploy.IO
     internal class CabinetWriter
     {
         private const uint Signature = 'M' | 'S' << 8 | 'C' << 16 | 'F' << 24;
+
         private const int BlockSize = 32768;
+
         private const int HeaderLength = 36;
+
         private const int FolderLength = 8;
+
         private const int FileOverheadLength = 16;
+
         private const int DataOverheadLength = 8;
 
-        private readonly string[] _filenames;
-        private readonly Func<string, string> _nameFunc;
+        private readonly string[] files;
 
-        private int _dataOffset;
-        private int _blocksCount;
-        private int _cabinetLength;
+        private readonly Func<string, string> nameFunc;
 
-        public CabinetWriter(IEnumerable<string> filenames, Func<string, string> nameFunc)
+        private int dataOffset;
+
+        private int blocksCount;
+
+        private int cabinetLength;
+
+        public CabinetWriter(IEnumerable<string> files, Func<string, string> nameFunc)
         {
-            _nameFunc = nameFunc;
+            this.nameFunc = nameFunc;
 
-            _filenames = filenames.ToArray();
+            this.files = files.ToArray();
         }
 
         public void Write(Stream stream)
         {
-            FileInfo[] files = _filenames.Select(x => new FileInfo(x)).ToArray();
+            var fileInfos = files.Select(x => new FileInfo(x)).ToArray();
 
-            int fileNamesLength = _filenames.Sum(x => Encoding.UTF8.GetByteCount(_nameFunc(x))) + _filenames.Length;
-            int totalFilesLength = files.Length*FileOverheadLength + fileNamesLength;
-            int dataLength = Convert.ToInt32(files.Sum(x => x.Length));
+            var fileNamesLength = files.Sum(x => Encoding.UTF8.GetByteCount(nameFunc(x))) + files.Length;
+            var totalFilesLength = fileInfos.Length * FileOverheadLength + fileNamesLength;
+            var dataLength = Convert.ToInt32(fileInfos.Sum(x => x.Length));
 
-            _dataOffset = HeaderLength + FolderLength + totalFilesLength;
-            _blocksCount = (dataLength + BlockSize - 1)/BlockSize;
+            dataOffset = HeaderLength + FolderLength + totalFilesLength;
+            blocksCount = (dataLength + BlockSize - 1)/BlockSize;
 
-            int totalDataLength = dataLength + _blocksCount * DataOverheadLength;
-            _cabinetLength = HeaderLength + FolderLength + totalFilesLength + totalDataLength;
+            var totalDataLength = dataLength + blocksCount * DataOverheadLength;
+            cabinetLength = HeaderLength + FolderLength + totalFilesLength + totalDataLength;
 
             var writer = new BinaryWriter(stream);
             
@@ -54,11 +62,11 @@ namespace Deploy.IO
         private void WriteData(BinaryWriter writer)
         {
             var buffer = new byte[BlockSize];
-            int length = 0;
+            var length = 0;
 
-            foreach (FileInfo file in _filenames.Select(x => new FileInfo(x)))
+            foreach (var file in files.Select(x => new FileInfo(x)))
             {
-                using (FileStream fileStream = file.OpenRead())
+                using (var fileStream = file.OpenRead())
                 {
                     while (fileStream.Position < fileStream.Length)
                     {
@@ -72,9 +80,11 @@ namespace Deploy.IO
                     }
                 }
             }
-            
+
             if (length > 0)
+            {
                 WriteDataBlock(writer, buffer, length);
+            }
         }
 
         private void WriteDataBlock(BinaryWriter writer, byte[] data, int length)
@@ -89,13 +99,13 @@ namespace Deploy.IO
         {
             long offset = 0;
 
-            foreach (string filename in _filenames)
+            foreach (var filename in files)
             {
                 var file = new FileInfo(filename);
 
-                DateTime dateTime = file.LastWriteTime;
-                int date = ((dateTime.Year - 1980) << 9) + (dateTime.Month << 5) + dateTime.Day;
-                int time = (dateTime.Hour << 11) + (dateTime.Minute << 5) + (dateTime.Second / 2);
+                var dateTime = file.LastWriteTime;
+                var date = ((dateTime.Year - 1980) << 9) + (dateTime.Month << 5) + dateTime.Day;
+                var time = (dateTime.Hour << 11) + (dateTime.Minute << 5) + (dateTime.Second / 2);
 
                 writer.Write((uint)file.Length);
                 writer.Write((uint)offset);
@@ -103,7 +113,7 @@ namespace Deploy.IO
                 writer.Write((ushort)date);
                 writer.Write((ushort)time);
                 writer.Write((ushort)0x20);
-                writer.Write(Encoding.UTF8.GetBytes(_nameFunc(filename)));
+                writer.Write(Encoding.UTF8.GetBytes(nameFunc(filename)));
                 writer.Write((byte)0);
 
                 offset += file.Length;
@@ -112,8 +122,8 @@ namespace Deploy.IO
 
         private void WriteFolder(BinaryWriter writer)
         {
-            writer.Write(_dataOffset);
-            writer.Write((ushort) _blocksCount);
+            writer.Write(dataOffset);
+            writer.Write((ushort) blocksCount);
             writer.Write((ushort)0);
         }
 
@@ -121,14 +131,14 @@ namespace Deploy.IO
         {
             writer.Write(Signature);
             writer.Write(0);
-            writer.Write(_cabinetLength);
+            writer.Write(cabinetLength);
             writer.Write(0);
             writer.Write(0x2c);
             writer.Write(0);
             writer.Write((byte) 3);
             writer.Write((byte) 1);
             writer.Write((ushort) 1);
-            writer.Write((ushort) _filenames.Length);
+            writer.Write((ushort) files.Length);
             writer.Write((ushort) 0);
             writer.Write((ushort) 0);
             writer.Write((ushort) 0);

@@ -7,13 +7,13 @@
             Name = name;
             Type = type;
             Constraint = constraint;
-            PrimaryKey = primaryKey;            
+            PrimaryKey = primaryKey;
         }
 
         public string Name { get; }
 
         public DataType Type { get; }
-        
+
         public bool PrimaryKey { get; }
 
         public Constraint Constraint { get; }

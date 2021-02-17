@@ -1,5 +1,4 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 
 namespace Deploy.Text
 {
@@ -31,7 +30,7 @@ namespace Deploy.Text
         [Fact]
         public void CanDecodeNonUnicode()
         {
-            var expected = new Byte[]
+            var expected = new byte[]
             {
                 0x52, 0x00, 0x6f, 0x00, 0x6f, 0x00, 0x74, 0x00,
                 0x20, 0x00, 0x45, 0x00, 0x6e, 0x00, 0x74, 0x00,
