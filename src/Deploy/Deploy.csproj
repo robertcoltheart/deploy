@@ -2,16 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
-    <Authors>Robert Coltheart</Authors>
-    <Company />
-    <PackageLicenseUrl>https://github.com/robertcoltheart/Deploy/raw/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/robertcoltheart/Deploy</PackageProjectUrl>
-    <Description>A fluent builder for MSI installation packages.</Description>
-    <PackageTags>MSI package installation setup</PackageTags>
-  </PropertyGroup>
+    <Version>1.0.0</Version>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\net45\Deploy.xml</DocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Authors>Robert Coltheart</Authors>
+    <Description>A fluent builder for MSI installation packages.</Description>
+    <PackageProjectUrl>https://github.com/robertcoltheart/Deploy</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>MSI package installation setup</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

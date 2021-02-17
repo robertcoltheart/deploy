@@ -1,4 +1,2 @@
-next-version: 1.1.2
 mode: ContinuousDelivery
 commit-message-incrementing: Disabled
-legacy-semver-padding: 0

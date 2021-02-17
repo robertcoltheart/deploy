@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "Deploy\Deploy.csproj", "{A3353AF1-29E1-4DA7-9465-B6716EBD286C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "src\Deploy\Deploy.csproj", "{A3353AF1-29E1-4DA7-9465-B6716EBD286C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy.Tests", "Deploy.Tests\Deploy.Tests.csproj", "{6D0B2F2E-149D-4FDC-AD8D-48F0225BFA73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy.Tests", "src\Deploy.Tests\Deploy.Tests.csproj", "{6D0B2F2E-149D-4FDC-AD8D-48F0225BFA73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
