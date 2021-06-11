@@ -188,6 +188,8 @@ namespace Deploy.IO
         {
             foreach (Table table in DefaultData.Tables)
                 _connection.Execute(table.Create());
+
+            _connection.Execute("CREATE TABLE `TestTable` (`Id` CHAR, `Name` CHAR(255) PRIMARY KEY `Id`)");
         }
 
         private void WriteUpgrade()

@@ -19,9 +19,7 @@ namespace Deploy.Data
 
         public void Commit(string productName, string author, PackagePlatform platform, int languageCode, Guid productCode)
         {
-            IntPtr infoHandle;
-
-            ThrowOnFailure(SafeNativeMethods.MsiGetSummaryInformation(_handle, null, 20, out infoHandle));
+            ThrowOnFailure(SafeNativeMethods.MsiGetSummaryInformation(_handle, null, 20, out var infoHandle));
             
             SetProperty(infoHandle, 2, 30, 0, 0, "Installation Database");
             SetProperty(infoHandle, 3, 30, 0, 0, productName);
@@ -45,23 +43,19 @@ namespace Deploy.Data
 
         public void Execute(string sql)
         {
-            IntPtr viewHandle;
-
-            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, sql, out viewHandle));
+            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, sql, out var viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiViewExecute(viewHandle, IntPtr.Zero));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(viewHandle));
         }
 
         public void ExecuteStream(string table, string filename, string name)
         {
-            IntPtr viewHandle;
-
             string query = $"INSERT INTO `{table}` (`Name`, `Data`) VALUES ('{name}', ?)";
 
             IntPtr recordHandle = SafeNativeMethods.MsiCreateRecord(1);
 
             ThrowOnFailure(SafeNativeMethods.MsiRecordSetStream(recordHandle, 1, filename));
-            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, query, out viewHandle));
+            ThrowOnFailure(SafeNativeMethods.MsiDatabaseOpenView(_handle, query, out var viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiViewExecute(viewHandle, recordHandle));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(viewHandle));
             ThrowOnFailure(SafeNativeMethods.MsiCloseHandle(recordHandle));
