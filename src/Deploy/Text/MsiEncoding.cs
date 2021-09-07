@@ -7,24 +7,41 @@ namespace Deploy.Text
     {
         private const string Base64Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz._";
 
-        public bool IncludePreamble { get; set; }
+        private static readonly byte[] Preamble =
+        {
+            0x40, 0x48
+        };
+
+        private readonly bool encoderShouldEmitTableIdentifier;
+
+        public MsiEncoding()
+        {
+        }
+
+        public MsiEncoding(bool encoderShouldEmitTableIdentifier)
+        {
+            this.encoderShouldEmitTableIdentifier = encoderShouldEmitTableIdentifier;
+        }
+
+        public override byte[] GetPreamble()
+        {
+            return Preamble;
+        }
 
         public override int GetByteCount(char[] chars, int index, int count)
         {
-            var byteCount = 0;
-            var sourceIndex = index;
+            var byteCount = encoderShouldEmitTableIdentifier
+                ? 2
+                : 0;
 
-            if (IncludePreamble)
-            {
-                byteCount += 2;
-            }
+            var sourceIndex = index;
 
             while (sourceIndex < index + count)
             {
                 var current = chars.GetOrDefault(sourceIndex++);
                 var next = chars.GetOrDefault(sourceIndex);
 
-                if (Base64Chars.IndexOf(current) != -1 && Base64Chars.IndexOf(next) != -1)
+                if (EncodeBase64(current) != -1 && EncodeBase64(next) != -1)
                 {
                     sourceIndex++;
                 }
@@ -40,7 +57,7 @@ namespace Deploy.Text
             var sourceIndex = charIndex;
             var destIndex = byteIndex;
 
-            if (IncludePreamble)
+            if (encoderShouldEmitTableIdentifier)
             {
                 bytes[destIndex++] = 0x40;
                 bytes[destIndex++] = 0x48;

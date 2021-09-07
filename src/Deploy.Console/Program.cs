@@ -62,10 +62,8 @@ namespace Deploy.Console
             const string largeFile = @"C:\Windows\Installer\2ef3ee3.msi";
             const string orcaFile = @"C:\Users\robert\Downloads\orca.msi";
             const string myFile = @"C:\Users\robert\Downloads\deploy.msi";
-
-            var encoding = new MsiEncoding();
-            //encoding.GetBytes("Root Entry");
-            //encoding.GetBytes("_Validation");
+            
+            var package = new Package(@"C:\Users\rober\Downloads\530580c4.msi");
 
             var files = Directory.GetFiles(@"C:\Windows\Installer", "*.msi");
 

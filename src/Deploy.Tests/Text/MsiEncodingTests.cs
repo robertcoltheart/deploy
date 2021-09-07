@@ -51,7 +51,7 @@ namespace Deploy.Text
                 0xe4, 0x45, 0xac, 0x44, 0x31, 0x48
             };
 
-            var encoding = new MsiEncoding {IncludePreamble = true};
+            var encoding = new MsiEncoding(true);
 
             Assert.Equal(expected, encoding.GetBytes("_Validation"));
             Assert.Equal("_Validation", encoding.GetString(expected));
@@ -74,9 +74,9 @@ namespace Deploy.Text
             Assert.Equal("\u0005SummaryInformation", encoding.GetString(expected));
         }
 
-        private void AssertEncoding(string value, bool preamble)
+        private void AssertEncoding(string value, bool isTable)
         {
-            var encoding = new MsiEncoding {IncludePreamble = preamble};
+            var encoding = new MsiEncoding(isTable);
 
             var bytes = encoding.GetBytes(value);
             var encoded = encoding.GetString(bytes);
