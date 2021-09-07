@@ -8,7 +8,8 @@ namespace Deploy.IO
         public static readonly Dictionary<string, string[]> Sequences = new Dictionary<string, string[]>
         {
             {
-                "AdminExecuteSequence", new[]
+                "AdminExecuteSequence",
+                new[]
                 {
                     "CostInitialize",
                     "FileCost",
@@ -21,7 +22,8 @@ namespace Deploy.IO
                 }
             },
             {
-                "AdvtExecuteSequence", new[]
+                "AdvtExecuteSequence",
+                new[]
                 {
                     "CostInitialize",
                     "CostFinalize",
@@ -34,7 +36,8 @@ namespace Deploy.IO
                 }
             },
             {
-                "InstallExecuteSequence", new[]
+                "InstallExecuteSequence",
+                new[]
                 {
                     "FindRelatedProducts",
                     "LaunchConditions",

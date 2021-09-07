@@ -14,6 +14,16 @@ namespace Deploy.Data
 
         public List<Column> Columns { get; } = new List<Column>();
 
+        public RowBuilder Insert(string table)
+        {
+            return new RowBuilder(table);
+        }
+
+        public static TableBuilder Create(string name)
+        {
+            return new TableBuilder(name);
+        }
+
         public string Create()
         {
             var columns = Columns.Select(x => $"`{x.Name}` {x.Type.ToString().ToUpper()}{(x.Type == DataType.Char ? "(255)" : "")}{(x.Constraint == Constraint.NotNull ? " NOT NULL" : "")}")

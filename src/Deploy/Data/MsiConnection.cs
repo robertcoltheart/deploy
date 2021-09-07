@@ -55,8 +55,6 @@ namespace Deploy.Data
 
         public void ExecuteStream(string table, string filename, string name)
         {
-            IntPtr viewHandle;
-
             string query = $"INSERT INTO `{table}` (`Name`, `Data`) VALUES ('{name}', ?)";
 
             IntPtr recordHandle = SafeNativeMethods.MsiCreateRecord(1);
