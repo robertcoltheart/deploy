@@ -1,4 +1,7 @@
-# Deploy [![AppVeyor](https://img.shields.io/appveyor/ci/robertcoltheart/Deploy.svg)](https://ci.appveyor.com/project/robertcoltheart/Deploy) [![NuGet](https://img.shields.io/nuget/v/Deploy.svg)](https://www.nuget.org/packages/Deploy)
+# Deploy
+
+[![NuGet](https://img.shields.io/nuget/v/Deploy?style=for-the-badge)](https://www.nuget.org/packages/Deploy) [![License](https://img.shields.io/github/license/robertcoltheart/deploy?style=for-the-badge)](https://github.com/robertcoltheart/deploy/blob/master/LICENSE)
+
 A fluent builder for MSI installation packages.
 
 ## Usage
