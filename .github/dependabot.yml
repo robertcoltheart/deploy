@@ -1,6 +1,16 @@
 version: 2
-updates:
-  - package-ecosystem: "nuget"
-    directory: "/"
-    schedule:
-      interval: "daily"
+#updates:
+#  - package-ecosystem: "nuget"
+#    directory: "/"
+#    schedule:
+#      interval: "daily"
+
+#  - package-ecosystem: "nuget"
+#    directory: "/build"
+#    schedule:
+#      interval: "weekly"
+
+#  - package-ecosystem: "nuget"
+#    directory: "/.config"
+#    schedule:
+#      interval: "weekly"
